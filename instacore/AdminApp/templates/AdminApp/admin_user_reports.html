@@ -1,0 +1,167 @@
+{% extends 'master.html' %}
+{% block title %}User Reports - InstaCore{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>User Reports</h1>
+    <p>Generate user reports</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="card-title mb-0">Generate User Report</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'admin:generate_user_report' %}">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="reportType" class="form-label">Report Type</label>
+                    <select class="form-select" id="reportType" name="report_type" required>
+                        <option value="">Select Report Type</option>
+                        <option value="all_users">All Users</option>
+                        <option value="by_role">Users by Role</option>
+                        <option value="by_subrole">Users by Subrole</option>
+                        <option value="active_users">Active Users</option>
+                        <option value="inactive_users">Inactive Users</option>
+                        <option value="new_users">New Users</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="reportFormat" class="form-label">Report Format</label>
+                    <select class="form-select" id="reportFormat" name="report_format" required>
+                        <option value="">Select Format</option>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="dateFrom" class="form-label">Date From</label>
+                    <input type="date" class="form-control" id="dateFrom" name="date_from">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dateTo" class="form-label">Date To</label>
+                    <input type="date" class="form-control" id="dateTo" name="date_to">
+                </div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Generate Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title mb-0">User Statistics</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-6">
+                <canvas id="userRoleChart" height="300"></canvas>
+            </div>
+            <div class="col-lg-6">
+                <canvas id="userGrowthChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // User Role Chart
+        const roleCtx = document.getElementById('userRoleChart').getContext('2d');
+        const userRoleChart = new Chart(roleCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Admins', 'Employees', 'Students', 'Candidates'],
+                datasets: [{
+                    data: [
+                        {{ user_stats.admins }},
+                        {{ user_stats.employees }},
+                        {{ user_stats.students }},
+                        {{ user_stats.candidates }}
+                    ],
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(23, 162, 184, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(220, 53, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(23, 162, 184, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Users by Role'
+                    }
+                }
+            }
+        });
+        
+        // User Growth Chart
+        const growthCtx = document.getElementById('userGrowthChart').getContext('2d');
+        const userGrowthChart = new Chart(growthCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'User Growth',
+                    data: [
+                        {{ user_growth.jan }},
+                        {{ user_growth.feb }},
+                        {{ user_growth.mar }},
+                        {{ user_growth.apr }},
+                        {{ user_growth.may }},
+                        {{ user_growth.jun }},
+                        {{ user_growth.jul }},
+                        {{ user_growth.aug }},
+                        {{ user_growth.sep }},
+                        {{ user_growth.oct }},
+                        {{ user_growth.nov }},
+                        {{ user_growth.dec }}
+                    ],
+                    backgroundColor: 'rgba(74, 107, 223, 0.2)',
+                    borderColor: 'rgba(74, 107, 223, 1)',
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'User Growth Over Time'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

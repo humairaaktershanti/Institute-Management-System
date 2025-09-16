@@ -1,0 +1,154 @@
+{% extends 'master.html' %}
+{% block title %}Admin Dashboard - InstaCore{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Admin Dashboard</h1>
+    <p>Welcome to the admin control panel</p>
+</div>
+
+<div class="dashboard-cards">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Total Users</div>
+            <div class="card-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_users }}</div>
+        <div class="card-change positive">
+            <i class="fas fa-arrow-up"></i> {{ user_growth }}% from last month
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Students</div>
+            <div class="card-icon success">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_students }}</div>
+        <div class="card-change positive">
+            <i class="fas fa-arrow-up"></i> {{ student_growth }}% from last month
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Employees</div>
+            <div class="card-icon warning">
+                <i class="fas fa-user-tie"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_employees }}</div>
+        <div class="card-change positive">
+            <i class="fas fa-arrow-up"></i> {{ employee_growth }}% from last month
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Admins</div>
+            <div class="card-icon danger">
+                <i class="fas fa-user-shield"></i>
+            </div>
+        </div>
+        <div class="card-value">{{ total_admins }}</div>
+        <div class="card-change neutral">
+            <i class="fas fa-minus"></i> No change
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Recent Activities</h4>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activities %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if activity.user.image %}
+                                            <img src="{{ activity.user.image.url }}" alt="Profile" class="rounded-circle me-2" width="30" height="30">
+                                        {% else %}
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                <i class="fas fa-user text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>{{ activity.user.username }}</div>
+                                    </div>
+                                </td>
+                                <td>{{ activity.action }}</td>
+                                <td>{{ activity.timestamp|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No recent activities</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Quick Actions</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_dashboard:user_management' %}" class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i> User Management
+                    </a>
+                    <a href="{% url 'admin_dashboard:courses' %}" class="btn btn-primary">
+                        <i class="fas fa-book me-2"></i> Courses
+                    </a>
+                    <a href="{% url 'admin_dashboard:attendance' %}" class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i> Attendance
+                    </a>
+                    <a href="{% url 'admin_dashboard:events_notices' %}" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt me-2"></i> Events & Notices
+                    </a>
+                    <a href="{% url 'admin_dashboard:reports' %}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-2"></i> Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4 class="card-title mb-0">System Notifications</h4>
+            </div>
+            <div class="card-body">
+                {% for notification in notifications %}
+                <div class="alert {% if notification.is_read %}alert-secondary{% else %}alert-primary{% endif %} alert-dismissible fade show" role="alert">
+                    {{ notification.message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% empty %}
+                <p class="text-muted">No notifications</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

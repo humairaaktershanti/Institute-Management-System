@@ -1,0 +1,283 @@
+{% extends 'master.html' %}
+{% block title %}Events & Notices - InstaCore{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Events & Notices</h1>
+    <p>Manage events and notices in the system</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Events & Notices</h4>
+        <div>
+            <a href="{% url 'admin:create_event' %}" class="btn btn-primary me-2">
+                <i class="fas fa-calendar-plus me-2"></i> Create Event
+            </a>
+            <a href="{% url 'admin:create_notice' %}" class="btn btn-primary">
+                <i class="fas fa-bullhorn me-2"></i> Create Notice
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="eventsNoticesTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true">Events</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notices-tab" data-bs-toggle="tab" data-bs-target="#notices" type="button" role="tab" aria-controls="notices" aria-selected="false">Notices</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-3" id="eventsNoticesTabsContent">
+            <div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="events-tab">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search events..." id="eventSearchInput">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary active">All</button>
+                                <button type="button" class="btn btn-outline-primary">Upcoming</button>
+                                <button type="button" class="btn btn-outline-primary">Past</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventTableBody">
+                            {% for event in events %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <div>{{ event.title }}</div>
+                                        <small class="text-muted">{{ event.description|truncatewords:10 }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ event.date|date:"M d, Y" }}</td>
+                                <td>{{ event.location }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ event.category }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'admin:edit_event' event.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteEventModal" data-event-id="{{ event.id }}" data-event-name="{{ event.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No events found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="notices" role="tabpanel" aria-labelledby="notices-tab">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search notices..." id="noticeSearchInput">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary active">All</button>
+                                <button type="button" class="btn btn-outline-primary">General</button>
+                                <button type="button" class="btn btn-outline-primary">Academic</button>
+                                <button type="button" class="btn btn-outline-primary">Emergency</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Notice Title</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noticeTableBody">
+                            {% for notice in notices %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <div>{{ notice.title }}</div>
+                                        <small class="text-muted">{{ notice.content|truncatewords:10 }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ notice.date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ notice.category }}</span>
+                                </td>
+                                <td>
+                                    {% if notice.priority == 'high' %}
+                                        <span class="badge bg-danger">High</span>
+                                    {% elif notice.priority == 'medium' %}
+                                        <span class="badge bg-warning">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'admin:edit_notice' notice.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteNoticeModal" data-notice-id="{{ notice.id }}" data-notice-title="{{ notice.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No notices found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteEventModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the event <strong id="deleteEventName"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteEventForm" method="post" action="{% url 'admin:delete_event' 0 %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Notice Modal -->
+<div class="modal fade" id="deleteNoticeModal" tabindex="-1" aria-labelledby="deleteNoticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteNoticeModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the notice <strong id="deleteNoticeTitle"></strong>? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteNoticeForm" method="post" action="{% url 'admin:delete_notice' 0 %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle event delete confirmation
+        const deleteEventModal = document.getElementById('deleteEventModal');
+        deleteEventModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const eventId = button.getAttribute('data-event-id');
+            const eventName = button.getAttribute('data-event-name');
+            
+            document.getElementById('deleteEventName').textContent = eventName;
+            const deleteEventForm = document.getElementById('deleteEventForm');
+            deleteEventForm.action = deleteEventForm.action.replace('0', eventId);
+        });
+        
+        // Handle notice delete confirmation
+        const deleteNoticeModal = document.getElementById('deleteNoticeModal');
+        deleteNoticeModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const noticeId = button.getAttribute('data-notice-id');
+            const noticeTitle = button.getAttribute('data-notice-title');
+            
+            document.getElementById('deleteNoticeTitle').textContent = noticeTitle;
+            const deleteNoticeForm = document.getElementById('deleteNoticeForm');
+            deleteNoticeForm.action = deleteNoticeForm.action.replace('0', noticeId);
+        });
+        
+        // Handle event search
+        const eventSearchInput = document.getElementById('eventSearchInput');
+        eventSearchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#eventTableBody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Handle notice search
+        const noticeSearchInput = document.getElementById('noticeSearchInput');
+        noticeSearchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#noticeTableBody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
